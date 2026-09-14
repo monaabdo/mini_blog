@@ -10,15 +10,19 @@ class Application{
         $this->registerClasses();
         $this->loadHelpers();
     }
+    public function run()
+    {
+        $this->session->start();
+    }
     public function share(string $key , mixed $value): void
     {
         $this->container[$key] = $value;
     }
     private function registerClasses()
     {
-        spl_autoload_register([$this,'load']);
+        spl_autoload_register([$this,'loadClasses']);
     }
-    public function load(string $className): mixed
+    public function loadClasses(string $className): mixed
     {
        
         if(strpos($className , 'App') === 0)
@@ -38,10 +42,40 @@ class Application{
     }
     public function getFile(string $key): mixed
     {
-        return isset($this->container[$key])? $this->container[$key] : '';
+        if(! $this->isSharing($key))
+        {
+            if($this->isCoreAlias($key))
+            {
+                $this->share($key,$this->createNewObject($key));
+            }else{
+                die($key." Not Found");
+            }
+        }
+        return $this->container[$key];
     }
     public function __get(string $key): mixed
     {
         return $this->getFile($key);
+    }
+    public function isSharing(string $key):bool
+    {
+        return isset($this->container[$key]);
+    }
+    private function isCoreAlias($alias)
+    {
+        $coreClass = $this->coreClass();
+        return isset($coreClass[$alias]);
+    }
+    private function createNewObject($class)
+    {
+        $coreClasses = $this->coreClasses();
+        $object = $coreClasses[$class];
+        return new $object($this);
+    }
+    private function coreClasses():array
+    {
+        return [
+
+        ];
     }
 }
