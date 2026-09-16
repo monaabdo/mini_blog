@@ -8,7 +8,11 @@ require __DIR__."/vendor/System/File.php";
 require __DIR__."/vendor/System/Application.php";
 
 $file = new File(__DIR__);
-$app = new Application($file);
+
+$app = Application::getInstance($file);
+
+$app->run();
+
 
 
 

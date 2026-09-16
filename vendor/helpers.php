@@ -1,5 +1,6 @@
 <?php 
 declare(strict_types=1);
+
 if(! function_exists('pre'))
 {
     function pre($value)
@@ -8,9 +9,9 @@ if(! function_exists('pre'))
     }
 }
 if(! function_exists('array_get'))
+{
+    function array_get(array $array , mixed $key, mixed $default=null)
     {
-        function array_get(array $array , mixed $key, mixed $default=null)
-        {
-            return isset($array[$key])? $array[$key] : $default;
-        }
+        return isset($array[$key])? $array[$key] : $default;
     }
+}

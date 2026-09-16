@@ -5,7 +5,7 @@ use System\Application;
 class Session{
     public function __construct(private Application $app)
     {
-        throw new \Exception('Not implemented');
+        
     }
     public function set(string $key , mixed $value)
     {
@@ -13,9 +13,9 @@ class Session{
     }
     public function start():void
     {
-        ini_set('session.use_only_cookies',1);
-        if(! session_id())
-        {
+        ini_set('session.use_only_cookies', '1');
+
+        if (! session_id()) {
             session_start();
         }
     }

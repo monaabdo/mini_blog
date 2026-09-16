@@ -10,11 +10,11 @@ class File{
     }
     public function exists_file(string $file): bool
     {
-        return file_exists($file);
+        return file_exists($this->to($file));
     }
     public function require_file(string $file): void
     {
-        require ($file);
+        require $this->to($file);
     }
     public function toVendor(string $path): string
     {
