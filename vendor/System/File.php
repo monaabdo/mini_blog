@@ -12,9 +12,9 @@ class File{
     {
         return file_exists($this->to($file));
     }
-    public function require_file(string $file): void
+    public function require_file(string $file): mixed
     {
-        require $this->to($file);
+        return require $this->to($file);
     }
     public function toVendor(string $path): string
     {
