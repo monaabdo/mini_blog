@@ -13,6 +13,14 @@ class Database
     private array $bindings =[];
     private int $lastID;
     private array $wheres = [];
+    private array $selects = [];
+    private array $joins = [];
+    private int $limit;
+    private int $offset;
+    private array $orderBy = [];    
+    private array $havings = [];
+    private array $groupBy =[];
+    private int $rows = 0;
     public function __construct(private Application $app)
     {
         if(! $this->isConnected())
@@ -73,6 +81,7 @@ class Database
         $sql .= $this->setFields();
         $this->query($sql , $this->bindings);
         $this->lastID = $this->connection()->lastInsertId();
+        $this->reset();
         return $this;
     }
     public function update($table = '')
@@ -88,6 +97,7 @@ class Database
         }
 
         $this->query($sql , $this->bindings);
+        $this->reset();
         return $this;
     }
     private function addToBindings(mixed $value)
@@ -146,5 +156,110 @@ class Database
         }
         $sql = rtrim($sql , ", ");
         return $sql;
+    }
+    public function select( string $select)
+    {
+        $this->selects[] = $select;
+        return $this;
+    }
+    public function join(string $join)
+    {
+        $this->joins[] = $join;
+        return $this;
+    }
+    public function limit($limit, $offset = 0)
+    {
+        $this->limit = $limit;
+        $this->offset = $offset;
+        return $this;
+    }
+    public function fetch($table = '')
+    {
+        if($table) $this->table($table);
+        $sql = $this->fetchStatement();
+        $result= $this->query($sql,$this->bindings)->fetch();
+        $this->reset();
+        return $result;
+    }
+    public function fetchAll($table = '')
+    {
+        if($table) $this->table($table);
+        $sql = $this->fetchStatement();
+        $results= $this->query($sql,$this->bindings)->fetchAll();
+        $this->rows = $results->rowCount();
+        $this->reset();
+        return $results;
+
+    }
+    public function rows()
+    {
+        return $this->rows;
+    }
+    public function delete(string $table = '')
+    {
+        if($table) $this->table($table);
+        $sql = "DELETE FROM $this->table ";
+        if($this->wheres)
+        {
+            $sql .=" WHERE ".implode(" ",$this->wheres);
+        }
+
+        $this->query($sql , $this->bindings);
+        $this->reset();
+        return $this;
+
+    }
+    public function orderBy($column , $sort = "ASC")
+    {
+        $this->orderBy = [$column,$sort];
+        return $this;
+    }
+    private function fetchStatement():string
+    {
+        $sql = "SELECT ";
+        if($this->selects)
+        {
+            $sql .=implode(",",$this->selects);
+        }
+        else
+        {
+            $sql .="*";
+        }
+        $sql .=" FROM $this->table ";
+        if($this->joins)
+        {
+            $sql .= implode(" ", $this->joins);
+        }
+        if($this->wheres)
+        {
+            $sql .=" WHERE ".implode(" ",$this->wheres);
+        }
+        if($this->limit)
+        {
+            $sql .=" Limit $this->limit";
+        }
+        if($this->offset)
+        {
+            $sql .=" OFFSET $this->offset";
+        }
+        if($this->orderBy)
+        {
+            $sql .=" orderBy ".implode(" ",$this->orderBy);
+        }
+        return $sql;
+    }
+    private function reset()
+    {
+        $this->limit = null;
+        $this->table = null;
+        $this->offset = null;
+        $this->data = [];
+        $this->joins = [];
+        $this->wheres = [];
+        $this->orderBy = [];
+        $this->havings = [];
+        $this->groupBy = [];
+        $this->selects = [];
+        $this->bindings = [];
     }
 }
